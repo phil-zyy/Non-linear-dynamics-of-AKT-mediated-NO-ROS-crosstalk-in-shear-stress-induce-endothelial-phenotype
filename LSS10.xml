@@ -1,0 +1,145 @@
+<CompuCell3D Revision="2" Version="4.6.0">
+   
+   <Metadata>
+      
+      <!-- Basic properties simulation -->
+      <NumberOfProcessors>1</NumberOfProcessors>
+      <DebugOutputFrequency>10</DebugOutputFrequency>
+      <!-- <NonParallelModule Name="Potts"/> -->
+   </Metadata>
+   
+   <Potts>
+      
+      <!-- Basic properties of CPM (GGH) algorithm -->
+      <Dimensions x="400" y="100" z="1"/>
+      <Steps>10081</Steps>
+      <Temperature>50.0</Temperature>
+      <NeighborOrder>2</NeighborOrder>
+   </Potts>
+   
+   <Plugin Name="CellType">
+      
+      <!-- Listing all cell types in the simulation -->
+      <CellType TypeId="0" TypeName="Medium"/>
+      <CellType TypeId="1" TypeName="QEC"/> <!-- quiescent endothelial cells -->
+      <CellType TypeId="2" TypeName="AEC"/> <!-- activeted endothelial cells -->
+      <CellType TypeId="3" TypeName="MC"/>  <!-- Monocyte cell -->
+      <CellType TypeId="4" TypeName="M1"/> <!-- pro-inflammatory macrophage -->
+      <CellType TypeId="5" TypeName="M2" />  <!-- anti-inflammatory macrophage --> 
+      <CellType TypeId="6" TypeName="DEAD"/>
+      <CellType TypeId="7" TypeName="DEC"/>
+   </Plugin>
+   
+   <Plugin Name="CenterOfMass"/>
+   <Plugin Name="PixelTracker"/>   
+   <Plugin Name="NeighborTracker"/> 
+   <Plugin Name="Volume"/> 
+   <Plugin Name="Surface"/> 
+   <Plugin Name="Secretion"/>
+   
+   <Plugin Name="Contact">
+   <!-- Specification of adhesion energies -->
+       <Energy Type1="Medium" Type2="Medium">40.0</Energy>
+       <Energy Type1="Medium" Type2="QEC">40.0</Energy>
+       <Energy Type1="Medium" Type2="AEC">40.0</Energy>
+       <Energy Type1="Medium" Type2="MC">40.0</Energy>
+       <Energy Type1="Medium" Type2="M1">40.0</Energy>
+       <Energy Type1="Medium" Type2="M2">40.0</Energy>
+       <Energy Type1="Medium" Type2="DEAD">40.0</Energy>
+       <Energy Type1="Medium" Type2="DEC">40.0</Energy>
+              
+       <Energy Type1="QEC" Type2="QEC">40.0</Energy>
+       <Energy Type1="QEC" Type2="AEC">50.0</Energy>
+       <Energy Type1="QEC" Type2="MC">120.0</Energy>
+       <Energy Type1="QEC" Type2="M1">120.0</Energy>
+       <Energy Type1="QEC" Type2="M2">120.0</Energy>
+       <Energy Type1="QEC" Type2="DEAD">80.0</Energy>
+       <Energy Type1="QEC" Type2="DEC">80.0</Energy>
+       
+       <Energy Type1="AEC" Type2="AEC">60.0</Energy>
+       <Energy Type1="AEC" Type2="MC">60.0</Energy>
+       <Energy Type1="AEC" Type2="M1">80.0</Energy>
+       <Energy Type1="AEC" Type2="M2">80.0</Energy>
+       <Energy Type1="AEC" Type2="DEAD">40.0</Energy>
+       <Energy Type1="AEC" Type2="DEC">40.0</Energy>
+             
+       <Energy Type1="MC" Type2="MC">40.0</Energy>
+       <Energy Type1="MC" Type2="M1">50.0</Energy>
+       <Energy Type1="MC" Type2="M2">50.0</Energy>
+       <Energy Type1="MC" Type2="DEAD">80.0</Energy>
+       <Energy Type1="MC" Type2="DEC">80.0</Energy>
+       
+       <Energy Type1="M1" Type2="M1">40.0</Energy>
+       <Energy Type1="M1" Type2="M2">120.0</Energy>
+       <Energy Type1="M1" Type2="DEAD">20.0</Energy>
+       <Energy Type1="M1" Type2="DEC">20.0</Energy>
+       
+       <Energy Type1="M2" Type2="M2">40.0</Energy>
+       <Energy Type1="M2" Type2="DEAD">20.0</Energy>
+       <Energy Type1="M2" Type2="DEC">20.0</Energy>
+              
+       <Energy Type1="DEAD" Type2="DEAD">40.0</Energy>
+       <Energy Type1="DEAD" Type2="DEC">40.0</Energy>
+       
+       <Energy Type1="DEC" Type2="DEC">40.0</Energy>
+       
+       <NeighborOrder>2</NeighborOrder> <!-- 2 or 4? --> 
+   </Plugin> 
+   
+  <Plugin Name="Chemotaxis">
+      <ChemicalField Name="MCP1" Source="DiffusionSolverFE">
+         <ChemotaxisByType Lambda="10000.0" Type="MC"/>
+      </ChemicalField> 
+   </Plugin>
+   
+   <Steppable Type="DiffusionSolverFE">
+               <!-- Specification of PDE solvers -->
+       <DiffusionField Name="ShearStressField" Frequency="10">
+          <DiffusionData>
+             <FieldName>ShearStressField</FieldName>
+          </DiffusionData>
+       </DiffusionField>
+       
+       <DiffusionField Name="NO" Frequency="10">
+          <DiffusionData>
+             <FieldName>NO</FieldName>
+             <DiffusionConstant>80.0</DiffusionConstant>
+             <DecayConstant>0.2</DecayConstant>
+          </DiffusionData>
+       </DiffusionField>
+       
+       <DiffusionField Name="ROS" Frequency="10">
+          <DiffusionData>
+             <FieldName>ROS</FieldName>
+             <DiffusionConstant>80.0</DiffusionConstant>
+             <DecayConstant>0.6</DecayConstant>
+          </DiffusionData>
+       </DiffusionField>
+       
+       <DiffusionField Name="MCP1" Frequency="10">
+          <DiffusionData>
+             <FieldName>MCP1</FieldName>
+             <DiffusionConstant>20.8</DiffusionConstant><!--10.8-->
+             <DecayConstant>0.12</DecayConstant>
+          </DiffusionData>
+          <SecretionData>                        
+             <Secretion Type="AEC">0.54</Secretion><!--0.18*15/5-->
+             <Secretion Type="M1">0.36</Secretion>
+          </SecretionData>
+       </DiffusionField> 
+              <!-- Specification of PDE solvers -->
+             
+   </Steppable>
+   
+   <Steppable Type="UniformInitializer">
+      
+      <!-- Initial layout of cells in the form of rectangular slab -->
+      <Region>
+         <BoxMin x="0" y="35" z="0"/>
+         <BoxMax x="400" y="40" z="1"/>
+         <Gap>0 </Gap>
+         <Width>5</Width>        
+         <Types>QEC</Types>
+      </Region>
+   </Steppable>
+</CompuCell3D>
